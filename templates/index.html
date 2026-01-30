@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Marketing Assistant</title>
+
+<style>
+body {
+    background:#0f172a;
+    font-family:Arial;
+    color:white;
+}
+
+.container {
+    width:600px;
+    margin:80px auto;
+    background:#1e293b;
+    padding:25px;
+    border-radius:20px;
+}
+
+input, button {
+    width:100%;
+    box-sizing:border-box;
+    padding:15px;
+    border-radius:10px;
+    border:none;
+    font-size:16px;
+}
+
+button {
+    margin-top:10px;
+    background:#38bdf8;
+    cursor:pointer;
+}
+
+.answer {
+    margin-top:20px;
+    background:#020617;
+    padding:15px;
+    border-radius:15px;
+    white-space:pre-line;
+    position:relative;
+}
+
+.copy-btn {
+    background:#22c55e;
+    padding:10px;
+    border-radius:8px;
+    font-size:14px;
+    margin-top:10px;
+    width:100%;
+}
+
+.loader {
+    display:none;
+    text-align:center;
+    margin-top:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>AI Marketing Assistant</h2>
+
+<form method="POST" onsubmit="showLoader()">
+<input 
+    name="product" 
+    placeholder="Введите товар..." 
+    maxlength="300"
+    required
+>
+<button>Сгенерировать</button>
+</form>
+
+<div class="loader" id="loader">
+    Generating...
+</div>
+
+{% if result %}
+<div class="answer">
+    <div id="resultText">{{ result }}</div>
+    <button class="copy-btn" onclick="copyText()">Copy</button>
+</div>
+
+{% endif %}
+
+</div>
+
+<script>
+function showLoader() {
+    document.getElementById("loader").style.display = "block";
+}
+
+function copyText() {
+    const text = document.getElementById("resultText").innerText;
+    navigator.clipboard.writeText(text);
+    alert("Скопировано!");
+}
+
+</script>
+
+</body>
+</html>
