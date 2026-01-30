@@ -3,6 +3,8 @@ import os
 from dotenv import load_dotenv
 import re
 
+from openai.types.shared.reasoning import Reasoning
+
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -20,18 +22,21 @@ PROMPT_MARKETING = """
 Стиль: продающий.
 Без Markdown. Без символов # и *.
 Только обычный текст.
-
-Товар:
 """
 
+
 def clean(text):
-    return re.sub(r'[#*`-]', '', text)
+    return re.sub(r"[#*`-]", "", text)
+
 
 def generate_marketing(product):
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",  
-        messages=[
-            {"role": "user", "content": PROMPT_MARKETING + product}
-        ]
-    )
-    return clean(response.choices[0].message.content)
+    try:
+        response = client.responses.create(
+            model="gpt-5.2",
+            reasoning=Reasoning(effort="low"),
+            instructions=PROMPT_MARKETING,
+            input="Товар: " + product,
+        )
+        return clean(response.output_text)
+    except Exception as e:
+        return f"Ошибка при генерации маркетингового описания: {e}"
