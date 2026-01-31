@@ -1,42 +1,34 @@
-from openai import OpenAI
 import os
-from dotenv import load_dotenv
 import re
-
-from openai.types.shared.reasoning import Reasoning
+from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-PROMPT_MARKETING = """
+PROMPT = """
 Ты профессиональный маркетолог и копирайтер.
-Сделай маркетинговое описание товара.
 
-Нужно:
-Короткое описание
-5 преимуществ
-2 слогана
-Хештеги
+Сделай:
+1. Короткое описание
+2. 5 преимуществ
+3. 2 слогана
+4. Хештеги
 
-Стиль: продающий.
-Без Markdown. Без символов # и *.
-Только обычный текст.
+Пиши аккуратно, с абзацами и переносами строк.
+Без Markdown.
 """
 
+def clean(text: str) -> str:
+    return re.sub(r"[`*]", "", text)
 
-def clean(text):
-    return re.sub(r"[#*`-]", "", text)
-
-
-def generate_marketing(product):
-    try:
-        response = client.responses.create(
-            model="gpt-5.2",
-            reasoning=Reasoning(effort="low"),
-            instructions=PROMPT_MARKETING,
-            input="Товар: " + product,
-        )
-        return clean(response.output_text)
-    except Exception as e:
-        return f"Ошибка при генерации маркетингового описания: {e}"
+def stream_marketing(product: str):
+    with client.responses.stream(
+        model="gpt-5.2",
+        instructions=PROMPT,
+        input=f"Товар: {product}",
+    ) as stream:
+        for event in stream:
+            if event.type == "response.output_text.delta":
+                yield clean(event.delta)

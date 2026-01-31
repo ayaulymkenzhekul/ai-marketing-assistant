@@ -1,19 +1,21 @@
-from flask import Flask, render_template, request
-from ai_service import generate_marketing
+from flask import Flask, render_template, request, Response
+from ai_service import stream_marketing
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def home():
-    result = ""
-    if request.method == "POST":
-        product = request.form["product"]
-        if len(product) > 300:  
-            product = product[:300]
+    return render_template("index.html")
 
-        result = generate_marketing(product)
+@app.route("/generate")
+def generate():
+    product = request.args.get("product", "").strip()
 
-    return render_template("index.html", result=result)
+    def event_stream():
+        for chunk in stream_marketing(product):
+            yield f"data: {chunk}\n\n"
+
+    return Response(event_stream(), mimetype="text/event-stream")
 
 if __name__ == "__main__":
     app.run(debug=True)
